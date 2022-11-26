@@ -24,11 +24,20 @@ function Mapa(props) {
   const center = [-20.465182, -54.621828];
 
   return (
-    <MapContainer styles={mapDiv} center={center} zoom={13} scrollWheelZoom={true} preferCanvas={true} renderer={L.canvas()}>
-      <TileLayer attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' url="https://tile.openstreetmap.org/{z}/{x}/{y}.png" />
+    <MapContainer
+      styles={mapDiv}
+      center={center}
+      zoom={13}
+      scrollWheelZoom={true}
+      updateWhenZooming={false}
+      updateWhenIdle={true}
+      preferCanvas={true}
+      renderer={L.canvas()}>
+      <TileLayer attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' 
+      url="https://tile.openstreetmap.org/{z}/{x}/{y}.png" />
       <LocationMarker />
       <LayersControl position="topright">
-          {props.children}
+        {props.children}
       </LayersControl>
     </MapContainer>
   )
