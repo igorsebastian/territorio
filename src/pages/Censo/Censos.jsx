@@ -58,7 +58,7 @@ function Censos() {
           // setError(error);
         }
       )
-  }, []);
+  }, [cartaoEscolhido, map]);
 
   //Traz ultima vez feito (firebase rt)
   useEffect(() => {
