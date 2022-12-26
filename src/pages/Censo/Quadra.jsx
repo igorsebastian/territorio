@@ -1,15 +1,25 @@
-import React, { useState, useEffect } from 'react'
-import { Popup, Polygon } from 'react-leaflet'
+import React, { useState, useEffect, /*useRef*/ } from 'react'
+import { Popup, Polygon, /*useMap*/ } from 'react-leaflet'
 import { db } from "../../Firebase/config"
 import { ref, set } from "firebase/database";
 
 
 function Quadra(props) {
+  const [ultimavez, setUltimavez] = useState("");
+
+  const [quadraAtiva, setquadraAtiva] = useState(false);
+
   const estiloPadrao = { padrao: true, color: 'black', fillOpacity: 0, stroke: false, weight: 2 }
   const estiloFeito = { padrao: false, color: 'green', fillOpacity: .5, stroke: false }
   // const [estilo, setEstilo] = useState(estiloPadrao);
-  const [ultimavez, setUltimavez] = useState("");
   var ocioDias = 1000;
+  //Calcula ocio
+  if (ultimavez) {
+    let ultimaParts = ultimavez.split("/");
+    let feito = new Date(+ultimaParts[2], ultimaParts[1] - 1, +ultimaParts[0]);
+    let hoje = new Date(Date.now());
+    ocioDias = Math.ceil(Math.abs(hoje - feito) / (1000 * 60 * 60 * 24) - 1)
+  }
 
   //Salva ultima vez em State
   useEffect(() => {
@@ -32,32 +42,42 @@ function Quadra(props) {
     }
   };
 
-  //Calcula ocio
-  if (ultimavez) {
-    let ultimaParts = ultimavez.split("/");
-    let feito = new Date(+ultimaParts[2], ultimaParts[1] - 1, +ultimaParts[0]);
-    let hoje = new Date(Date.now());
-    ocioDias = Math.ceil(Math.abs(hoje - feito) / (1000 * 60 * 60 * 24) - 1)
-  }
+
+  // const [refReady, setRefReady] = useState(false);
+  // let popupRef = useRef();
+  //Abrir popup (erro de lat long...)
+  //const map = useMap();
+  // useEffect(() => {
+  //   if (refReady && quadraAtiva) {
+  //     popupRef.openOn(map);
+  //   }
+  // }, [quadraAtiva, refReady, map]);
 
   return (
     <Polygon
       pathOptions={ocioDias > 360 ? estiloPadrao : estiloFeito}
       positions={props.coords}
-    // eventHandlers={{
-    //   click: (e) => {
-    //     quadraClicada(estilo)
-    //   },
-    // }}
+      eventHandlers={{
+        click: (e) => {
+          setquadraAtiva(props)
+        },
+      }}
     >
-      {props.logado ? 
-      <Popup>
-        <p>Quadra de censo {props.id}</p>
-        {<button onClick={() => marcarFeito()}>
-          Marcar censo em: {(new Date()).toLocaleDateString('en-GB')}
-        </button>}
-      </Popup>
-      : <></>}
+      {quadraAtiva && props.logado &&
+        <Popup
+          // ref={(r) => {
+          //   popupRef = r;
+          //   setRefReady(true);
+          // }}
+          onClose={() => {
+            setquadraAtiva(false);
+          }}>
+          <p>Quadra de censo {props.id}</p>
+          {<button onClick={() => marcarFeito()}>
+            Marcar censo em: {(new Date()).toLocaleDateString('en-GB')}
+          </button>}
+        </Popup>
+      }
     </Polygon>
   )
 }

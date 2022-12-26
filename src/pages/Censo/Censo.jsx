@@ -44,10 +44,6 @@ function Censo(props) {
     ocioDias = Math.ceil(Math.abs(hoje - feito) / (1000 * 60 * 60 * 24) - 1)
   }
 
-  //Abrir popup ao clicar
-  const abrirPopup = (e) => {
-    setActive(true);
-  };
 
   return (
     <Polygon
@@ -56,18 +52,17 @@ function Censo(props) {
       key={props.dados.codIBGE}
       eventHandlers={{
         click: (e) => {
-          abrirPopup()
+          setActive(true); //Abrir popup ao clicar
         },
       }}
     >
-      {active === true ?
+      {active &&
         <CensoPopup
           dados={props.dados}
           ultimavez={ultimavez}
           ocioDias={ocioDias}
           marcarFeito={marcarFeito}
-          logado={props.logado} />
-        : null}
+          logado={props.logado} />}
     </Polygon>
   )
 }

@@ -1,10 +1,16 @@
 import React, { useEffect, useState } from 'react'
 import { LayersControl, LayerGroup } from 'react-leaflet'
+import { useLocation } from "react-router-dom";
 import Quadra from './Quadra';
 //import quadrasJSON from "./json/quadras.json";
 import { db } from "../../Firebase/config"
 import { onValue, ref, } from "firebase/database";
 
+//Parametros da URL
+function useQuery() {
+  const { search } = useLocation();
+  return React.useMemo(() => new URLSearchParams(search), [search]);
+}
 
 const appscriptAPI = "https://script.google.com/macros/s/AKfycbzc4r9mPMFVmbk4knjfNI7N1tDgqOh_Xs7D_N-QUwakwWQydJ3Nx_EhoPjwfpOmoTA1/exec?"
 function Quadras() {
@@ -16,21 +22,30 @@ function Quadras() {
   //Verifica se existe token na sessao
   let logado = sessionStorage.getItem('auth_token')?.length > 0
 
+  //Parametros
+  let query = useQuery();
+  let cartaoEscolhido = query.get("cartao")
+
   //Traz base quadras (appscript)
   useEffect(() => {
-    fetch(appscriptAPI + "api=quadras")
+    var fetchURL = appscriptAPI + "api=quadras";
+    if (cartaoEscolhido) { //Se escolhido territorio unico ajusta consulta
+      fetchURL = fetchURL + "&codIBGE=" + cartaoEscolhido;
+    }
+
+    fetch(fetchURL)
       .then(res => res.json())
       .then(
         (result) => {
           setIsLoaded(true);
-          setQuadras(JSON.parse(result));
+          setQuadras(result);
         },
         (error) => {
           setIsLoaded(true);
           // setError(error);
         }
       )
-  }, []);
+  }, [cartaoEscolhido]);
 
   //Traz ultima vez feito (firebase rt)
   useEffect(() => {
@@ -46,7 +61,6 @@ function Quadras() {
   }, []);
 
 
-
   if (isLoaded) {
     return (
       <LayersControl.Overlay checked name="Quadras">
@@ -57,7 +71,7 @@ function Quadras() {
               id={q.id}
               key={q.id}
               ultimavez={ultimavez[q.id]}
-              logado = {logado} />
+              logado={logado} />
           })}
         </LayerGroup >
       </LayersControl.Overlay >

@@ -60,6 +60,7 @@ function Censos() {
       )
   }, [cartaoEscolhido, map]);
 
+  
   //Traz ultima vez feito (firebase rt)
   useEffect(() => {
     const ultimavezRef = ref(db, 'feitos/censo/ultimaVez');
