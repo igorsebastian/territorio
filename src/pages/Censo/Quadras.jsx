@@ -1,46 +1,70 @@
-import React, { useEffect, useRef, useState } from 'react'
-import { LayersControl, LayerGroup, MapContainer, TileLayer, Marker, Popup, useMap, Polygon } from 'react-leaflet'
+import React, { useEffect, useState } from 'react'
+import { LayersControl, LayerGroup } from 'react-leaflet'
 import Quadra from './Quadra';
-import quadrasJSON from "./json/quadras.json";
+//import quadrasJSON from "./json/quadras.json";
+import { db } from "../../Firebase/config"
+import { onValue, ref, } from "firebase/database";
 
-import { firestore } from "../../Firebase/config"
-import { addDoc, collection, query, where, getDocs } from "@firebase/firestore"
 
-// function cadastrarTodas() {
-//   const quadrasRef = collection(firestore, "quadras");
-//   quadrasJSON.features.map((f, i) => {
-//     try {
-//       console.log("cadastrando quadra "+i)
-//       //addDoc(quadrasRef, { geometry: JSON.stringify(f.geometry), feito: true })
-//     } catch (e) {
-//       console.log(e)
-//     }
-//   })
-// }
-
-// async function getQuadras(){
-//   const consulta = query(collection(firestore, 'quadras'), where("__name__", "==", "zy8MKAVcogn0gGKqA4bo"));
-//   const quadras = await getDocs(consulta);
-//   quadras.forEach((doc) => {
-//     console.log(doc.data())
-//   })
-//   return quadras;
-// }
-
+const appscriptAPI = "https://script.google.com/macros/s/AKfycbzc4r9mPMFVmbk4knjfNI7N1tDgqOh_Xs7D_N-QUwakwWQydJ3Nx_EhoPjwfpOmoTA1/exec?"
 function Quadras() {
-  //const quadras = getQuadras();
+  // const [error, setError] = useState(null);
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [quadras, setQuadras] = useState([]);
+  const [ultimavez, setUltimavez] = useState([]);
 
-  return (
-    <LayersControl.Overlay checked name="Quadras">
-      <LayerGroup>
-        {quadrasJSON.features.map((q, index) => {
-          return index > 0 ?
-            <Quadra dados={q} id={index} key={index} />
-            : null
-        })}
-      </LayerGroup >
-    </LayersControl.Overlay >
-  )
+  //Verifica se existe token na sessao
+  let logado = sessionStorage.getItem('auth_token')?.length > 0
+
+  //Traz base quadras (appscript)
+  useEffect(() => {
+    fetch(appscriptAPI + "api=quadras")
+      .then(res => res.json())
+      .then(
+        (result) => {
+          setIsLoaded(true);
+          setQuadras(JSON.parse(result));
+        },
+        (error) => {
+          setIsLoaded(true);
+          // setError(error);
+        }
+      )
+  }, []);
+
+  //Traz ultima vez feito (firebase rt)
+  useEffect(() => {
+    const ultimavezRef = ref(db, 'feitos/quadras/ultimaVez');
+    onValue(ultimavezRef, (snapshot) => {
+      if (snapshot.exists()) {
+        setUltimavez(snapshot.val())
+        // console.log("Atualiza feitos")
+      }
+    }, {
+      onlyOnce: true
+    });
+  }, []);
+
+
+
+  if (isLoaded) {
+    return (
+      <LayersControl.Overlay checked name="Quadras">
+        <LayerGroup>
+          {quadras.map((q) => {
+            return <Quadra
+              coords={q.coords}
+              id={q.id}
+              key={q.id}
+              ultimavez={ultimavez[q.id]}
+              logado = {logado} />
+          })}
+        </LayerGroup >
+      </LayersControl.Overlay >
+    )
+  } else {
+    return null;
+  }
 }
 
 export default Quadras;

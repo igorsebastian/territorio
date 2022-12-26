@@ -1,78 +1,74 @@
-import React, { useRef, useState, useEffect } from 'react'
-import { LayersControl, LayerGroup, useMapEvents, Marker, Popup, useMap, Polygon } from 'react-leaflet'
-import { useLocation } from "react-router-dom";
-import L from 'leaflet';
-//import Cartao from './Cartao';
+import React, { useState, useEffect } from 'react'
+import { Polygon } from 'react-leaflet'
 import { db } from "../../Firebase/config"
-import { get, getDatabase, onValue, ref, query as fireQuery, equalTo, set, child, orderByChild, limitToFirst } from "firebase/database";
+import { ref, set } from "firebase/database";
 
-//import censoJSON from "./json/censo.json";
 
-function useQuery() {
-  const { search } = useLocation();
-  return React.useMemo(() => new URLSearchParams(search), [search]);
-}
+import CensoPopup from './CensoPopup'
 
-function Censo() {
+function Censo(props) {
   //Variaveis
-  const estiloPadrao = { color: 'gray', fillOpacity: 0, weight: 2 }
+  const estiloPadrao = { color: 'black', fillOpacity: 0, weight: 5, opacity: .3 }
   const estiloFeito = { color: 'green', fillOpacity: .5, stroke: true }
-  const feito = useState(false);
-
-  const [cartoes, setCartoes] = useState([]);
-
-  //Parametros
-  let query = useQuery();
-  let cartaoEscolhido = query.get("cartao")
+  const [ultimavez, setUltimavez] = useState("");
+  const [active, setActive] = useState(false);
+  var ocioDias = 1000;
 
 
-  useEffect(() => { 
-    let cartoesRef
-    if (cartaoEscolhido) {
-      console.log("filtrado por "+cartaoEscolhido)
-      cartoesRef = fireQuery(ref(getDatabase(), "censo/cartao/features"), orderByChild("properties/codIBGE"), equalTo(Number(cartaoEscolhido)));
+  //Salva ultima vez em State
+  useEffect(() => {
+    setUltimavez(props.ultimavez);
+  }, [props.ultimavez])
+
+  //Marcar como feito e atualizar ultima vez
+  const marcarFeito = (p) => {
+    var hoje = new Date(Date.now()).toLocaleDateString("en-GB")
+    const ultimavezRef = ref(db, 'feitos/censo/ultimaVez/' + p.dados.codIBGE);
+    //Insere hoje ou retira ultima vez
+    if (!p.ultimavez) {
+      // console.log("Marcado feito " + p.dados.cartao + " em " + hoje)
+      set(ultimavezRef, hoje); //Atualiza data
+      setUltimavez(hoje)
     } else {
-      cartoesRef = fireQuery(ref(getDatabase(), "censo/cartao/features"), limitToFirst(5));
+      // console.log("Desmarcado feito " + p.dados.cartao + " em " + hoje)
+      set(ultimavezRef, null); //Remove
+      setUltimavez()
     }
-    onValue(cartoesRef, (snapshot) => {
-      let fetch = snapshot.val()
-      fetch = Array.isArray(fetch) ? fetch : [fetch[Object.keys(fetch)[0]]]
-      console.log(fetch)
-      setCartoes(fetch)
-    }, {
-      onlyOnce: true
-    });
-    //Params
-    // if (cartaoEscolhido) {
-    //   //setCartoes(cartoes.filter(item => item.properties.codIBGE == cartaoEscolhido))
-    //   let coords = cartoes.geometry.coordinates.map(p => p.map(v => [v[1], v[0]]))
-    //   let bounds = L.polygon(coords).getBounds()
-    //   map.fitBounds(bounds);
-    //   console.log(cartoes)
-    // }
-  }, []);
+  };
 
+  //Calcula ocio
+  if (ultimavez) {
+    let ultimaParts = ultimavez.split("/");
+    let feito = new Date(+ultimaParts[2], ultimaParts[1] - 1, +ultimaParts[0]);
+    let hoje = new Date(Date.now());
+    ocioDias = Math.ceil(Math.abs(hoje - feito) / (1000 * 60 * 60 * 24) - 1)
+  }
 
-  //Referencias
-  const map = useMap();
-  const layerRef = useRef()
+  //Abrir popup ao clicar
+  const abrirPopup = (e) => {
+    setActive(true);
+  };
 
   return (
-    <LayersControl.Overlay checked name="Censo">
-      <LayerGroup>
-        {cartoes?.map(c => {
-          return (<Polygon
-            pathOptions={c.properties.ultimaVez != "Nunca" ? estiloFeito : estiloPadrao}
-            positions={c.geometry.coordinates.map(p => p.map(v => [v[1], v[0]]))}
-            key={c.properties.codIBGE}
-          >
-            <Popup>
-              <div className="content" dangerouslySetInnerHTML={{ __html: c.properties.popupHTML }}></div>
-            </Popup>
-          </Polygon>)
-        })}
-      </LayerGroup>
-    </LayersControl.Overlay>
+    <Polygon
+      pathOptions={ocioDias > 60 ? estiloPadrao : estiloFeito}
+      positions={props.dados.coords}
+      key={props.dados.codIBGE}
+      eventHandlers={{
+        click: (e) => {
+          abrirPopup()
+        },
+      }}
+    >
+      {active === true ?
+        <CensoPopup
+          dados={props.dados}
+          ultimavez={ultimavez}
+          ocioDias={ocioDias}
+          marcarFeito={marcarFeito}
+          logado={props.logado} />
+        : null}
+    </Polygon>
   )
 }
 

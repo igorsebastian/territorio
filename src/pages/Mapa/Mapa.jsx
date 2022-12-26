@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react'
-import { MapContainer, LayersControl, LayerGroup, TileLayer, Marker, Popup, useMap, Rectangle, Circle, FeatureGroup } from 'react-leaflet'
+import React from 'react'
+import { MapContainer, LayersControl, TileLayer } from 'react-leaflet'
 import LocationMarker from './Location';
 import L from 'leaflet';
 
@@ -33,8 +33,8 @@ function Mapa(props) {
       updateWhenIdle={true}
       preferCanvas={true}
       renderer={L.canvas()}>
-      <TileLayer attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' 
-      url="https://tile.openstreetmap.org/{z}/{x}/{y}.png" />
+      <TileLayer attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        url="https://tile.openstreetmap.org/{z}/{x}/{y}.png" />
       <LocationMarker />
       <LayersControl position="topright">
         {props.children}

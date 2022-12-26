@@ -1,5 +1,5 @@
 import React from 'react'
-import { LayerGroup, MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet'
+import { LayerGroup, Marker, Popup } from 'react-leaflet'
 
 import enderecos from "./data/enderecos.geojson";
 
