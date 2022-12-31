@@ -1,12 +1,14 @@
-import React, { useState, useEffect, /*useRef*/ } from 'react'
-import { Popup, Polygon, /*useMap*/ } from 'react-leaflet'
-import { db } from "../../Firebase/config"
+import React, { useState, useEffect } from 'react'
+import { Popup, Polygon } from 'react-leaflet'
+
+import { db } from "../../service/firebase"
 import { ref, set } from "firebase/database";
+import useAuth from "../../hooks/useAuth"
 
 
 function Quadra(props) {
+  const { user } = useAuth();
   const [ultimavez, setUltimavez] = useState("");
-
   const [quadraAtiva, setquadraAtiva] = useState(false);
 
   const estiloPadrao = { padrao: true, color: 'black', fillOpacity: 0, stroke: false, weight: 2 }
@@ -63,7 +65,7 @@ function Quadra(props) {
         },
       }}
     >
-      {quadraAtiva && props.logado &&
+      {quadraAtiva &&
         <Popup
           // ref={(r) => {
           //   popupRef = r;
@@ -73,7 +75,7 @@ function Quadra(props) {
             setquadraAtiva(false);
           }}>
           <p>Quadra de censo {props.id}</p>
-          {<button onClick={() => marcarFeito()}>
+          {user && <button onClick={() => marcarFeito()}>
             Marcar censo em: {(new Date()).toLocaleDateString('en-GB')}
           </button>}
         </Popup>

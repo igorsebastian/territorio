@@ -4,7 +4,7 @@ import { useLocation } from "react-router-dom";
 import L from 'leaflet';
 import { Polygon } from 'react-leaflet'
 import Censo from './Censo'
-import { db } from "../../Firebase/config"
+import { db } from "../../service/firebase"
 import { onValue, ref, } from "firebase/database";
 
 //Parametros da URL
@@ -19,9 +19,6 @@ function Censos() {
   // const [error, setError] = useState(null);
   // const [isLoaded, setIsLoaded] = useState(false);
   const [ultimavez, setUltimavez] = useState([]);
-
-  //Verifica se existe token na sessao
-  let logado = sessionStorage.getItem('auth_token')?.length > 0
 
   //Parametros
   let query = useQuery();
@@ -93,8 +90,7 @@ function Censos() {
             return <Censo
               dados={q}
               key={q.codIBGE}
-              ultimavez={ultimavez[q.codIBGE]}
-              logado={logado} />
+              ultimavez={ultimavez[q.codIBGE]} />
           })}
         </Pane>
       </LayerGroup>

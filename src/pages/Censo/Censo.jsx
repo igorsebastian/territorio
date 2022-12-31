@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Polygon } from 'react-leaflet'
-import { db } from "../../Firebase/config"
+import { db } from "../../service/firebase"
 import { ref, set } from "firebase/database";
 
 

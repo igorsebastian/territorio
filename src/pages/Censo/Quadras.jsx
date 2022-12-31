@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react'
-import { LayersControl, LayerGroup } from 'react-leaflet'
 import { useLocation } from "react-router-dom";
-import Quadra from './Quadra';
-//import quadrasJSON from "./json/quadras.json";
-import { db } from "../../Firebase/config"
+import { LayersControl, LayerGroup } from 'react-leaflet'
+
+import { db } from "../../service/firebase"
 import { onValue, ref, } from "firebase/database";
+
+import Quadra from './Quadra';
 
 //Parametros da URL
 function useQuery() {
@@ -15,12 +16,10 @@ function useQuery() {
 const appscriptAPI = "https://script.google.com/macros/s/AKfycbzc4r9mPMFVmbk4knjfNI7N1tDgqOh_Xs7D_N-QUwakwWQydJ3Nx_EhoPjwfpOmoTA1/exec?"
 function Quadras() {
   // const [error, setError] = useState(null);
+
   const [isLoaded, setIsLoaded] = useState(false);
   const [quadras, setQuadras] = useState([]);
   const [ultimavez, setUltimavez] = useState([]);
-
-  //Verifica se existe token na sessao
-  let logado = sessionStorage.getItem('auth_token')?.length > 0
 
   //Parametros
   let query = useQuery();
@@ -70,8 +69,7 @@ function Quadras() {
               coords={q.coords}
               id={q.id}
               key={q.id}
-              ultimavez={ultimavez[q.id]}
-              logado={logado} />
+              ultimavez={ultimavez[q.id]} />
           })}
         </LayerGroup >
       </LayersControl.Overlay >

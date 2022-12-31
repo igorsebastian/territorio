@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { LayersControl, LayerGroup, Marker } from 'react-leaflet'
-import { db } from "../../Firebase/config"
+import { db } from "../../service/firebase"
 import { onValue, ref, } from "firebase/database";
 import icone from './IconeTerritorio'
 import TerritorioPopup from './TerritorioPopup'
