@@ -1,5 +1,6 @@
 {
   "hosting": {
+    "target": "territorio-espanhola-cg",
     "public": "build",
     "ignore": [
       "firebase.json",

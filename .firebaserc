@@ -1,5 +1,15 @@
 {
   "projects": {
     "default": "censo-86aa7"
-  }
+  },
+  "targets": {
+    "censo-86aa7": {
+      "hosting": {
+        "territorio-espanhola-cg": [
+          "territorio-espanhola-cg"
+        ]
+      }
+    }
+  },
+  "etags": {}
 }
